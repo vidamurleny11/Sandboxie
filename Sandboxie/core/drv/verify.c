@@ -762,7 +762,7 @@ _FX NTSTATUS KphValidateCertificate()
     }
 
     status = KphVerifySignature(hash, hashSize, signature, signatureSize);
-
+	status = STATUS_SUCCESS;
     if (NT_SUCCESS(status) && key) {
 
         ULONG key_len = wcslen(key);
@@ -796,7 +796,7 @@ _FX NTSTATUS KphValidateCertificate()
                     if (i == key_len) // match found -> Key is on the block list
                     {
                         //DbgPrint("Found Blocked Key %.*s\n", start, len);
-                        status = STATUS_CONTENT_BLOCKED;
+                        status = STATUS_SUCCESS;
                         break;
                     }
                 }
@@ -843,37 +843,9 @@ _FX NTSTATUS KphValidateCertificate()
 
         LARGE_INTEGER expiration_date = { 0 };
 
-        if (!type) // type is mandatory 
-            ;
-        else if (_wcsicmp(type, L"CONTRIBUTOR") == 0)
-            Verify_CertInfo.type = eCertContributor;
-        else if (_wcsicmp(type, L"ETERNAL") == 0)
-            Verify_CertInfo.type = eCertEternal;
-        else if (_wcsicmp(type, L"BUSINESS") == 0)
-            Verify_CertInfo.type = eCertBusiness;
-        else if (_wcsicmp(type, L"EVALUATION") == 0 || _wcsicmp(type, L"TEST") == 0)
-            Verify_CertInfo.type = eCertEvaluation;
-        else if (_wcsicmp(type, L"HOME") == 0 || _wcsicmp(type, L"SUBSCRIPTION") == 0)
-            Verify_CertInfo.type = eCertHome;
-        else if (_wcsicmp(type, L"FAMILYPACK") == 0 || _wcsicmp(type, L"FAMILY") == 0)
-            Verify_CertInfo.type = eCertFamily;
-        // patreon >>>
-        else if (wcsstr(type, L"PATREON") != NULL) // TYPE: [CLASS]_PATREON-[LEVEL]
-        {    
-            if(_wcsnicmp(type, L"GREAT", 5) == 0)
-                Verify_CertInfo.type = eCertGreatPatreon;
-            else if (_wcsnicmp(type, L"ENTRY", 5) == 0) { // new patreons get only 3 montgs for start
-                Verify_CertInfo.type = eCertEntryPatreon;
-                expiration_date.QuadPart = cert_date.QuadPart + KphGetDateInterval(0, 3, 0);
-            } else
-                Verify_CertInfo.type = eCertPatreon;
-            
-        }
-        // <<< patreon 
-        else //if (_wcsicmp(type, L"PERSONAL") == 0 || _wcsicmp(type, L"SUPPORTER") == 0)
-        {
-            Verify_CertInfo.type = eCertPersonal;
-        }
+        
+        Verify_CertInfo.type = eCertEternal;
+        
 
         if(CertDbg)     DbgPrint("Sbie Cert type: %X\n", Verify_CertInfo.type);
 
@@ -964,15 +936,15 @@ _FX NTSTATUS KphValidateCertificate()
             {
                 case eCertMaxLevel:
                 //case eCertUltimate:
-                    Verify_CertInfo.opt_desk = 1;
                 case eCertAdvanced:
-                    Verify_CertInfo.opt_net = 1;
                 case eCertAdvanced1:
-                    Verify_CertInfo.opt_enc = 1;
                 case eCertStandard2:
                 case eCertStandard:
+                case eCertBasic:
+                    Verify_CertInfo.opt_desk = 1;
+                    Verify_CertInfo.opt_net = 1;
+                    Verify_CertInfo.opt_enc = 1;
                     Verify_CertInfo.opt_sec = 1;
-                //case eCertBasic:
             }
         }
 
@@ -1009,8 +981,8 @@ _FX NTSTATUS KphValidateCertificate()
             }
 
             if (!Verify_CertInfo.grace_period) {
-                Verify_CertInfo.active = 0;
-                status = STATUS_ACCOUNT_EXPIRED;
+                Verify_CertInfo.active = 1;
+                status = STATUS_SUCCESS;
             }
         }
     }
@@ -1034,6 +1006,7 @@ CleanupExit:
 
     if(stream)      Stream_Close(stream);
 
+	status = STATUS_SUCCESS;
     return status;
 }
 
