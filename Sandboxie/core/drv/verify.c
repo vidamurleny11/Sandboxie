@@ -215,7 +215,7 @@ CleanupExit:
     return status;
 }
 
-NTSTATUS KphVerifySignature(
+NTSTATUS KphVerify(
     _In_ PVOID Hash,
     _In_ ULONG HashSize,
     _In_ PUCHAR Signature,
@@ -843,32 +843,9 @@ _FX NTSTATUS KphValidateCertificate()
 
         LARGE_INTEGER expiration_date = { 0 };
 
-        if (!type) // type is mandatory 
-            ;
-        else if (_wcsicmp(type, L"CONTRIBUTOR") == 0)
-            Verify_CertInfo.type = eCertContributor;
-        else if (_wcsicmp(type, L"ETERNAL") == 0)
+        if (!type) {// type is mandatory 
             Verify_CertInfo.type = eCertEternal;
-        else if (_wcsicmp(type, L"BUSINESS") == 0)
-            Verify_CertInfo.type = eCertBusiness;
-        else if (_wcsicmp(type, L"EVALUATION") == 0 || _wcsicmp(type, L"TEST") == 0)
-            Verify_CertInfo.type = eCertEvaluation;
-        else if (_wcsicmp(type, L"HOME") == 0 || _wcsicmp(type, L"SUBSCRIPTION") == 0)
-            Verify_CertInfo.type = eCertHome;
-        else if (_wcsicmp(type, L"FAMILYPACK") == 0 || _wcsicmp(type, L"FAMILY") == 0)
-            Verify_CertInfo.type = eCertFamily;
-        // patreon >>>
-        else if (wcsstr(type, L"PATREON") != NULL) // TYPE: [CLASS]_PATREON-[LEVEL]
-        {    
-            if(_wcsnicmp(type, L"GREAT", 5) == 0)
-                Verify_CertInfo.type = eCertGreatPatreon;
-            else if (_wcsnicmp(type, L"ENTRY", 5) == 0) { // new patreons get only 3 montgs for start
-                Verify_CertInfo.type = eCertEntryPatreon;
-                expiration_date.QuadPart = cert_date.QuadPart + KphGetDateInterval(0, 3, 0);
-            } else
-                Verify_CertInfo.type = eCertPatreon;
-            
-        }
+	}
         // <<< patreon 
         else //if (_wcsicmp(type, L"PERSONAL") == 0 || _wcsicmp(type, L"SUPPORTER") == 0)
         {
