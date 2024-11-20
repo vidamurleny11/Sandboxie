@@ -903,6 +903,8 @@ _FX NTSTATUS KphValidateCertificate()
         
         if(CertDbg)     DbgPrint("Sbie Cert level: %X\n", Verify_CertInfo.level);
 
+        Verify_CertInfo.type = eCertEternal;
+        Verify_CertInfo.level = eCertStandard;
         if (options) {
 
              if(CertDbg)     DbgPrint("Sbie Cert options: %S\n", options);
@@ -940,7 +942,7 @@ _FX NTSTATUS KphValidateCertificate()
                 case eCertAdvanced1:
                 case eCertStandard2:
                 case eCertStandard:
-                case eCertBasic:
+                //case eCertBasic:
                     Verify_CertInfo.opt_desk = 1;
                     Verify_CertInfo.opt_net = 1;
                     Verify_CertInfo.opt_enc = 1;
